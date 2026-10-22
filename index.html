@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HOME STRUCTURES</title>
+<style>
+:root{color-scheme:light;--bg:#fff;--text:#3f3f3f;--gray:#8e8e93;--accent:#b93ad6;--accent-soft:#f3dffa;--quote:#e9e9e9;--bar:#c4c4c4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"SF Pro Text","Sarabun","Noto Sans Thai",system-ui,sans-serif;line-height:1.5}
+.wrap{max-width:640px;margin:0 auto;padding:20px 20px 80px}
+button{font:inherit;color:var(--text);cursor:pointer}
+.btn{border:1px solid var(--bar);background:transparent;border-radius:8px;padding:6px 12px}
+.btn.main{border-color:var(--accent);color:var(--accent)}
+[contenteditable]{outline:none;border-radius:6px}
+[contenteditable]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[data-ph]:empty::before{content:attr(data-ph);opacity:.4;pointer-events:none}
+.export [data-ph]:empty::before{content:none}
+.top-actions{display:flex;justify-content:flex-end;margin-bottom:12px}
+h1{font-size:44px;line-height:1.1;margin:0 0 20px;font-weight:800}
+.sec{margin-bottom:28px}
+.sec-head{display:flex;align-items:center;gap:6px}
+.sec-head h2{flex:1;font-size:32px;line-height:1.2;margin:0;font-weight:800}
+.chev{border:none;background:none;width:30px;height:30px;font-size:20px;color:var(--bar);transition:transform .15s;flex:none}
+.sec.closed .chev{transform:rotate(-90deg)}
+.sec.closed .sec-body{display:none}
+.sec-color{width:30px;height:30px;border:none;padding:0;background:none;cursor:pointer;flex:none}
+.swipe{position:relative;margin-bottom:26px}
+.sec-swipe{margin-bottom:14px}
+.q-swipe{margin-bottom:18px}
+.swipe.open,.swipe.drag{overflow:hidden}
+.swipe-in{position:relative;background:var(--bg);touch-action:pan-y;transition:transform .2s}
+.swipe.drag>.swipe-in{transition:none}
+.swipe.open>.swipe-in{transform:translateX(-100px)}
+.del-btn{position:absolute;right:0;top:0;bottom:0;width:92px;border:none;border-radius:16px;background:#ea4b48;color:#fff;font-weight:600;font-size:16px;opacity:0;pointer-events:none;transition:opacity .2s}
+.swipe.open>.del-btn,.swipe.drag>.del-btn{opacity:1;pointer-events:auto}
+.sec-swipe .del-btn{border-radius:20px}
+.block{margin-bottom:26px}
+.quote{border-left:5px solid var(--bar);padding-left:14px}
+.qtext{background:var(--quote);border-radius:16px;padding:16px 20px;font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:22px;line-height:1.55;min-height:1.5em;white-space:pre-wrap}
+.hl{color:var(--accent);background:var(--accent-soft);font-weight:700;text-decoration:underline;border-radius:6px;padding:0 4px}
+.chip{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:12px;padding:8px 18px;font-size:26px;margin-bottom:12px;min-width:3em}
+.row{font-size:26px;margin:10px 0}
+.row b{font-weight:800}.row i{font-weight:600}
+.row.warn,.row.warn span{color:var(--gray)}
+.row.warn{font-size:20px}
+.sec-actions{display:flex;gap:8px;flex-wrap:wrap}
+.add-sec{width:100%;padding:12px;border-style:dashed;color:var(--accent);border-color:var(--accent);margin-top:4px}
+#undo{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));display:none;gap:14px;align-items:center;background:#333;color:#fff;border-radius:14px;padding:10px 16px;z-index:50;font-size:15px;white-space:nowrap}
+#undo button{border:none;background:none;color:#8ab4ff;font-weight:700;font-size:15px}
+@media (max-width:480px){h1{font-size:34px}.sec-head h2{font-size:26px}.qtext{font-size:18px}.chip{font-size:20px}.row{font-size:20px}.row.warn{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  
+  <h1 contenteditable="true" spellcheck="false">Word Basket 🛍️🛒</h1>
+  <div id="sections"></div>
+  <button class="btn add-sec" id="addSec">+ เพิ่มหัวข้อย่อย</button>
+</div>
+
+<template id="tSec">
+  <section class="sec">
+    <div class="swipe sec-swipe"><button class="del-btn del-sec">Delete</button>
+      <div class="swipe-in sec-head"><button class="chev" title="ย่อ/ขยาย">⌄</button><h2 contenteditable="true" spellcheck="false" data-ph="ชื่อหัวข้อ"></h2><input type="color" class="sec-color" title="สีของหัวข้อนี้"></div>
+    </div>
+    <div class="sec-body"><div class="blocks"></div>
+      <div class="sec-actions"><button class="btn add-block">+ เพิ่ม block</button><button class="btn main hl-btn">highlight</button><button class="btn num-btn">bullet</button></div>
+    </div>
+  </section>
+</template>
+
+<template id="tBlock">
+  <div class="block">
+    <div class="swipe q-swipe"><button class="del-btn del-block">Delete</button>
+      <div class="swipe-in quote"><div class="qtext" contenteditable="true" spellcheck="false" data-ph="พิมพ์ประโยคตัวอย่างที่นี่"></div></div>
+    </div>
+    <div class="chip" contenteditable="true" spellcheck="false" data-ph="grammar pattern"></div>
+    <div class="row"><b>meaning</b> : <span contenteditable="true" spellcheck="false" data-ph="…"></span></div>
+    <div class="row"><b>position</b> : <span contenteditable="true" spellcheck="false" data-ph="…"></span></div>
+    <div class="row warn"><b>warning</b> - <span contenteditable="true" spellcheck="false" data-ph="…"></span></div>
+  </div>
+</template>
+
+<script>
+const $=s=>document.querySelector(s);
+const secs=$("#sections");
+const PALETTE=["#b93ad6","#2b7fff","#e8590c","#12a150","#e0306a","#0e9aa7"];
+const W=100;
+const MK=[];for(let i=0;i<10;i++)MK.push(String.fromCharCode(0x2776+i));for(let i=0;i<10;i++)MK.push(String.fromCharCode(0x24EB+i));
+const isMk=c=>MK.includes(c);
+
+function soft(hex){const n=parseInt(hex.slice(1),16);const c=[n>>16,(n>>8)&255,n&255].map(v=>Math.round(v*0.18+255*0.82));return `rgb(${c})`}
+function setColor(sec,hex){
+  sec.dataset.color=hex;sec.style.setProperty("--accent",hex);sec.style.setProperty("--accent-soft",soft(hex));
+  const i=sec.querySelector(".sec-color");if(i)i.value=hex;
+}
+function addBlock(sec){
+  const b=$("#tBlock").content.firstElementChild.cloneNode(true);
+  sec.querySelector(".blocks").appendChild(b);return b;
+}
+function addSection(){
+  const s=$("#tSec").content.firstElementChild.cloneNode(true);
+  secs.appendChild(s);setColor(s,PALETTE[(secs.children.length-1)%PALETTE.length]);return s;
+}
+addBlock(addSection());
+
+/* ตัวเลข bullet ❶ ❷ ❸ … */
+function renum(host){
+  let n=0;const w=document.createTreeWalker(host,NodeFilter.SHOW_TEXT);const nodes=[];
+  while(w.nextNode())nodes.push(w.currentNode);
+  nodes.forEach(t=>{const v=t.nodeValue;for(let i=0;i<v.length;i++){if(isMk(v[i])){const c=MK[Math.min(n,19)];n++;if(v[i]!==c)t.replaceData(i,1,c);}}});
+}
+function selHost(){
+  const sel=getSelection();if(!sel.rangeCount)return null;
+  const r=sel.getRangeAt(0),n=r.commonAncestorContainer,el=n.nodeType===1?n:n.parentElement,host=el&&el.closest("[contenteditable]");
+  return host?{sel,r,el,host}:null;
+}
+function getLines(host){
+  const lines=[[]];
+  const nl=()=>{if(lines[lines.length-1].length)lines.push([])};
+  (function walk(p){
+    for(let n=p.firstChild;n;n=n.nextSibling){
+      if(n.nodeType===3){if(n.nodeValue.length)lines[lines.length-1].push(n)}
+      else if(n.nodeName==="BR"){if(n.nextSibling)nl()}
+      else if(n.nodeName==="DIV"||n.nodeName==="P"){nl();walk(n);nl()}
+      else walk(n);
+    }
+  })(host);
+  return lines.filter(l=>l.some(t=>t.nodeValue.trim()));
+}
+/* เลือกข้อความแล้วกด bullet: ทุกบรรทัดที่แยกด้วย Enter ได้เลขถัดไปเอง (กดซ้ำเพื่อเอาออก) */
+function insertBullet(){
+  const h=selHost();if(!h||!h.host.matches(".qtext"))return;
+  const hit=getLines(h.host).filter(l=>l.some(t=>h.r.intersectsNode(t)));
+  if(!hit.length){
+    if(h.r.collapsed){document.execCommand("insertText",false,MK[0]+" ");renum(h.host);save();}
+    return;
+  }
+  const first=l=>l.find(t=>t.nodeValue.trim());
+  const all=hit.every(l=>isMk(first(l).nodeValue.trimStart()[0]));
+  hit.forEach(l=>{
+    const t=first(l),v=t.nodeValue,lead=v.length-v.trimStart().length;
+    if(all)t.deleteData(lead,v[lead+1]===" "?2:1);
+    else if(!isMk(v[lead])){
+      const p=t.parentNode;
+      if(p.classList&&p.classList.contains("hl"))p.before(document.createTextNode(MK[0]+" "));
+      else t.insertData(lead,MK[0]+" ");
+    }
+  });
+  renum(h.host);save();
+}
+function addHl(){
+  const h=selHost();if(!h)return;
+  if(h.el.closest(".hl")||[...h.host.querySelectorAll(".hl")].some(x=>h.r.intersectsNode(x))){
+    const hit=new Set();const own=h.el.closest(".hl");if(own)hit.add(own);
+    h.host.querySelectorAll(".hl").forEach(x=>{if(h.r.intersectsNode(x))hit.add(x)});
+    hit.forEach(x=>{const p=x.parentNode;x.replaceWith(...x.childNodes);p.normalize();});
+    save();return;
+  }
+  if(h.r.collapsed)return;
+  try{const s=document.createElement("span");s.className="hl";h.r.surroundContents(s);h.sel.removeAllRanges();save();}catch(_){}
+}
+
+/* ลบแล้วเลิกทำได้ */
+let undoTimer;
+function softDelete(el,label){
+  const parent=el.parentNode,next=el.nextSibling;el.remove();
+  let bar=$("#undo");
+  if(!bar){bar=document.createElement("div");bar.id="undo";bar.innerHTML="<span></span><button>เลิกทำ</button>";document.body.appendChild(bar);}
+  bar.firstChild.textContent="ลบ"+label+"แล้ว";bar.style.display="flex";
+  bar.lastChild.onclick=()=>{
+    try{parent.insertBefore(el,next&&next.parentNode===parent?next:null);}catch(_){parent.appendChild(el);}
+    bar.style.display="none";save();
+  };
+  clearTimeout(undoTimer);undoTimer=setTimeout(()=>bar.style.display="none",8000);
+}
+
+document.addEventListener("click",e=>{
+  const t=e.target;
+  if(t.closest(".chev")){t.closest(".sec").classList.toggle("closed");return}
+  if(t.closest(".add-block")){addBlock(t.closest(".sec")).querySelector(".qtext").focus();return}
+  if(t.closest(".del-block")){softDelete(t.closest(".block"),"block");return}
+  if(t.closest(".del-sec")){softDelete(t.closest(".sec"),"หัวข้อ");return}
+  if(t.closest(".hl-btn")){addHl();return}
+  if(t.closest(".num-btn")){insertBullet();return}
+});
+document.addEventListener("mousedown",e=>{if(e.target.closest(".hl-btn,.num-btn"))e.preventDefault()});
+document.addEventListener("input",e=>{
+  const t=e.target;
+  if(t.matches(".sec-color")){setColor(t.closest(".sec"),t.value);return}
+  if(t.dataset&&t.dataset.ph!==undefined){
+    if(!t.textContent.trim())t.innerHTML="";
+    else if(t.matches(".qtext"))renum(t);
+  }
+});
+$("#addSec").onclick=()=>{const s=addSection();addBlock(s);s.querySelector("h2").focus();};
+document.addEventListener("beforeinput",e=>{
+  if(e.inputType==="insertParagraph"&&e.target.matches&&e.target.matches(".qtext")){e.preventDefault();document.execCommand("insertLineBreak");}
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&e.target.matches("h1,h2,.chip,.row span")){e.preventDefault();e.target.blur();}
+});
+document.addEventListener("paste",e=>{
+  if(!e.target.closest("[contenteditable]"))return;
+  e.preventDefault();
+  document.execCommand("insertText",false,(e.clipboardData||window.clipboardData).getData("text/plain"));
+});
+
+/* ปัดซ้ายแล้วขึ้นปุ่ม Delete */
+let cur=null,sx=0,sy=0,dx=0,mode=0,base=0;
+const innerOf=s=>s.querySelector(":scope>.swipe-in");
+function closeAll(except){document.querySelectorAll(".swipe.open").forEach(s=>{if(s!==except)s.classList.remove("open")})}
+document.addEventListener("pointerdown",e=>{
+  const s=e.target.closest(".swipe");closeAll(s);cur=null;
+  if(!s||e.target.closest(".del-btn,button,input"))return;
+  if(e.pointerType==="mouse"&&e.target.closest("[contenteditable]"))return;
+  cur=s;sx=e.clientX;sy=e.clientY;dx=0;mode=0;base=s.classList.contains("open")?-W:0;
+});
+document.addEventListener("pointermove",e=>{
+  if(!cur)return;
+  dx=e.clientX-sx;const dy=e.clientY-sy;
+  if(mode===0){
+    if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)){mode=1;cur.classList.add("drag");}
+    else if(Math.abs(dy)>8){cur=null;return}
+  }
+  if(mode===1)innerOf(cur).style.transform=`translateX(${Math.max(-W,Math.min(0,base+dx))}px)`;
+});
+function endSwipe(){
+  if(cur&&mode===1){const x=base+dx;innerOf(cur).style.transform="";cur.classList.remove("drag");cur.classList.toggle("open",x<-W/2);}
+  cur=null;mode=0;
+}
+document.addEventListener("pointerup",endSwipe);
+document.addEventListener("pointercancel",endSwipe);
+
+/* Export PDF */
+async function exportPdf(btn){
+  const dl=window.claude?await window.claude.use("downloads"):null;
+  if(!dl){alert("ตอนนี้ดาวน์โหลดไม่ได้ในหน้านี้ ลองเปิดผ่านลิงก์ของเว็บโดยตรง");return}
+  if(!window.html2canvas||!window.jspdf){alert("โหลดตัวสร้าง PDF ไม่สำเร็จ ลองรีเฟรชหน้าแล้วกดใหม่");return}
+  const label=btn.textContent;btn.disabled=true;btn.textContent="กำลังสร้าง PDF…";
+  const box=document.createElement("div");
+  try{
+    box.className="export";
+    box.style.cssText="position:absolute;left:-10000px;top:0;width:680px;padding:28px;background:#fff;color:#3f3f3f";
+    box.append($("h1").cloneNode(true),secs.cloneNode(true));
+    box.querySelectorAll(".del-btn,.chev,.sec-color,.sec-actions").forEach(x=>x.remove());
+    box.querySelectorAll(".closed,.open,.drag").forEach(x=>x.classList.remove("closed","open","drag"));
+    box.querySelectorAll("[contenteditable]").forEach(x=>x.removeAttribute("contenteditable"));
+    document.body.appendChild(box);
+    if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+    const top0=box.getBoundingClientRect().top,S=2;
+    const tops=[...box.querySelectorAll(".sec,.block")].map(el=>(el.getBoundingClientRect().top-top0)*S);
+    const canvas=await html2canvas(box,{scale:S,backgroundColor:"#ffffff",logging:false});
+    const cw=canvas.width,ch=canvas.height;
+    const pdf=new window.jspdf.jsPDF({unit:"mm",format:"a4"});
+    const mx=10,my=10,iw=210-2*mx,ratio=iw/cw,pageHpx=Math.floor((297-2*my)/ratio);
+    let start=0,first=true;
+    while(start<ch){
+      let end=Math.min(start+pageHpx,ch);
+      if(end<ch){const c=tops.filter(t=>t>start+pageHpx*0.4&&t<=end);if(c.length)end=Math.round(Math.max(...c));}
+      const h=end-start,part=document.createElement("canvas");part.width=cw;part.height=h;
+      const ctx=part.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,cw,h);
+      ctx.drawImage(canvas,0,start,cw,h,0,0,cw,h);
+      if(!first)pdf.addPage();first=false;
+      pdf.addImage(part.toDataURL("image/jpeg",0.92),"JPEG",mx,my,iw,h*ratio);
+      start=end;
+    }
+    await dl.save({filename:"word-basket-"+new Date().toISOString().slice(0,10)+".pdf",data:pdf.output("blob")});
+  }catch(err){
+    if(!err||err.code!=="declined")alert("สร้าง PDF ไม่สำเร็จ ลองใหม่อีกครั้ง");
+  }finally{box.remove();btn.disabled=false;btn.textContent=label;}
+}
+
+
+/* บันทึกอัตโนมัติ: ในเบราว์เซอร์ + สำรองไว้ที่เซิร์ฟเวอร์ (ปิดแอปแล้วข้อมูลไม่หาย) */
+const KEY="wordbasket2-v1";
+let lastU=0,remoteRef=null,remoteReady=false,remoteBusy=false,remotePending=null;
+function applyState(d){
+  try{
+    if(!d||typeof d.s!=="string")return;
+    $("h1").innerHTML=/Word Basket/.test(d.t||"")?"HOME STRUCTURES":d.t;secs.innerHTML=d.s;
+    secs.querySelectorAll(".swipe-in").forEach(x=>x.style.transform="");
+    secs.querySelectorAll(".sec").forEach((s,i)=>setColor(s,s.dataset.color||PALETTE[i%PALETTE.length]));
+    secs.querySelectorAll(".row>i").forEach(i=>{const b=document.createElement("b");b.textContent=i.textContent;i.replaceWith(b)});
+    secs.querySelectorAll(".row.warn").forEach(r=>r.childNodes.forEach(n=>{if(n.nodeType===3&&n.nodeValue.includes(":"))n.nodeValue=n.nodeValue.replace(":","-")}));
+    secs.querySelectorAll(".hl-btn").forEach(b=>b.textContent="highlight");
+    secs.querySelectorAll(".num-btn").forEach(b=>b.textContent="bullet");
+    secs.querySelectorAll(".chip").forEach(c=>c.dataset.ph="grammar pattern");
+  }catch(_){}
+}
+function pushRemote(st){
+  if(!remoteRef||!remoteReady)return;
+  remotePending=st;if(remoteBusy)return;remoteBusy=true;
+  (async()=>{while(remotePending){const s=remotePending;remotePending=null;try{await remoteRef.set(s);}catch(_){}}remoteBusy=false;})();
+}
+function save(){
+  try{
+    const c=secs.cloneNode(true);
+    c.querySelectorAll(".open,.drag").forEach(x=>x.classList.remove("open","drag"));
+    const st={t:$("h1").innerHTML,s:c.innerHTML,u:Date.now()};
+    lastU=st.u;
+    try{localStorage.setItem(KEY,JSON.stringify(st));}catch(_){}
+    pushRemote(st);
+  }catch(_){}
+}
+$("h1").textContent="HOME STRUCTURES";
+let local=null;try{local=JSON.parse(localStorage.getItem(KEY)||"null")}catch(_){}
+if(local){applyState(local);lastU=local.u||0;}
+(async()=>{
+  try{
+    const db=window.claude?await window.claude.use("db"):null;
+    if(!db)return;
+    remoteRef=db.doc("app/state");
+    const snap=await remoteRef.get();
+    const r=snap.exists?snap.data():null;
+    remoteReady=true;
+    if(r&&typeof r.s==="string"&&(r.u||0)>lastU){
+      applyState(r);lastU=r.u||0;
+      try{localStorage.setItem(KEY,JSON.stringify(r));}catch(_){}
+    }else save();
+  }catch(_){}
+})();
+let tm;function later(){clearTimeout(tm);tm=setTimeout(save,300)}
+["input","click","change"].forEach(ev=>document.addEventListener(ev,later));
+addEventListener("pagehide",save);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)save()});
+</script>
+</body>
+</html>
